@@ -18,10 +18,10 @@ def start_timer(user_id,subscription_period):
     if str(user_id) == admin_id:
         print('Старт таймера на админа')
         subscription_period = 1
-        os.system(f"echo 'python3 /home/abragill/Outline-vpn-tgbot/delete_key_and_subscription.py {user_id}' | at now +{subscription_period} minute")
+        os.system(f"echo 'python3 /home/abragill/outline-vpn-tgbot/delete_key_and_subscription.py {user_id}' | at now +{subscription_period} minute")
     else:
         print('Старт таймера')
-        os.system(f"echo 'python3 /home/abragill/Outline-vpn-tgbot/delete_key_and_subscription.py {user_id}' | at now +{subscription_period} days")
+        os.system(f"echo 'python3 /home/abragill/outline-vpn-tgbot/delete_key_and_subscription.py {user_id}' | at now +{subscription_period} days")
 
 # def create_notification(user_id):
 #     os.system(f"echo ")

@@ -134,15 +134,18 @@ def return_user_keys(callback):
 @bot.callback_query_handler(func=lambda callback: callback.data in ['50','123','247','699','1349','2300'])
 def handle_paid_key(callback):
     handle_paid_key.price = callback.data
-    # if handle_paid_key.price == '247':
-    #     price_discount = top_secret.fortuna_wheel()
-    #     if type(price_discount) == tuple:
-    #         handle_paid_key.price = str(price_discount[0])
-    #         discount = price_discount[1]
-    #         discount_msg = f"Вам доступна скидка {discount}!\nСумма к оплате: {handle_paid_key.price} рублей\n"
-    #     else:
-    #         handle_paid_key.price = str(price_discount)
-    #         discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"
+    discount_msg = "" 
+    if handle_paid_key.price == '247':
+        price_discount = top_secret.fortuna_wheel()
+        if type(price_discount) == tuple:
+            handle_paid_key.price = str(price_discount[0])
+            discount = price_discount[1]
+            discount_msg = f"Вам доступна скидка {discount}!\nСумма к оплате: {handle_paid_key.price} рублей\n"
+        else:
+            handle_paid_key.price = str(price_discount)
+            discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"
+    else:
+        discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"
 
     user_key_id = f'{user_id(callback)}'
 

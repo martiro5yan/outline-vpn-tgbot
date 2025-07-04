@@ -140,7 +140,7 @@ def handle_paid_key(callback):
         if type(price_discount) == tuple:
             handle_paid_key.price = str(price_discount[0])
             discount = price_discount[1]
-            discount_msg = f"Вам доступна скидка {discount}!\nСумма к оплате: {handle_paid_key.price} рублей\n"
+            discount_msg = f"Вам доступна скидка {discount}%!\nСумма к оплате: {handle_paid_key.price} рублей\n"
         else:
             handle_paid_key.price = str(price_discount)
             discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"

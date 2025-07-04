@@ -4,6 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+import top_secret
 import outline
 import text
 import invoice_management
@@ -133,6 +134,16 @@ def return_user_keys(callback):
 @bot.callback_query_handler(func=lambda callback: callback.data in ['50','123','247','699','1349','2300'])
 def handle_paid_key(callback):
     handle_paid_key.price = callback.data
+    # if handle_paid_key.price == '247':
+    #     price_discount = top_secret.fortuna_wheel()
+    #     if type(price_discount) == tuple:
+    #         handle_paid_key.price = str(price_discount[0])
+    #         discount = price_discount[1]
+    #         discount_msg = f"Вам доступна скидка {discount}!\nСумма к оплате: {handle_paid_key.price} рублей\n"
+    #     else:
+    #         handle_paid_key.price = str(price_discount)
+    #         discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"
+
     user_key_id = f'{user_id(callback)}'
 
     # Создание ссылки на оплату
@@ -143,7 +154,7 @@ def handle_paid_key(callback):
         
         # Кнопка "Проверить оплату"
         markup.add(types.InlineKeyboardButton('Проверить оплату', callback_data=f'check_payment_{invoice_link[1]}'))
-        msg = bot.send_message(callback.message.chat.id, f'Сумма оплаты: {handle_paid_key.price} рублей\n1 - Оплатить\n2 - Нажать проверить оплату', reply_markup=markup)
+        msg = bot.send_message(callback.message.chat.id, f'{discount_msg}\n1 - Оплатить\n2 - Нажать проверить оплату', reply_markup=markup)
     else:
         bot.send_message(callback.message.chat.id,f'У вас уже имеется ключ, проверка /mykeys')
     bot.send_message(admin_id, f'Выбрал тариф {handle_paid_key.price} @{username(callback)}')
@@ -164,7 +175,7 @@ def check_payment_status(callback):
     first_name = callback.from_user.first_name
     last_name = callback.from_user.last_name
     # Переписать этот стыд
-    if handle_paid_key.price == '247' or handle_paid_key.price == '123':
+    if handle_paid_key.price in top_secret.p:
         subscription_period = '30'
     elif handle_paid_key.price == '50':
         subscription_period = '1'
@@ -187,12 +198,12 @@ def check_payment_status(callback):
         
         key = outline.create_new_key(key_id=user_key_id, name=str(user_id(callback)))
         if database.is_user_in_db(user_id(callback)):
-            database.update_purchased_key(user_id(callback),key.access_url,int(subscription_period))
+            database.update_purchased_key(user_id(callback),key.access_url+'#@vpnyt_bot',int(subscription_period))
             text_message = (f"Оплата подтверждена! Ваш ключ обновлен,вставте его в приложении Outline\n\n'Метка об оплате-{libel}\n\n```{key.access_url+'#@vpnyt_bot'}```")
             bot.send_message(callback.message.chat.id, text_message,parse_mode='Markdown')
             start_at_timer.start_timer(user_id(callback),subscription_period)
         else:    
-            database.add_db(user_id(callback), first_name, last_name, key.access_url,int(subscription_period))
+            database.add_db(user_id(callback), first_name, last_name, key.access_url+'#@vpnyt_bot',int(subscription_period))
             start_at_timer.start_timer(user_id(callback),subscription_period)
             text_message = (f"Оплата подтверждена! Ваш ключ активирован.\n'Метка об оплате-{libel}\n```{key.access_url+'#@vpnyt_bot'}```")
             bot.send_message(callback.message.chat.id, text_message,parse_mode='Markdown')

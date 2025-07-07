@@ -189,7 +189,7 @@ def check_payment_status(callback):
     last_name = callback.from_user.last_name
 
     price = user_prices.get(user_id_str)
-    print(price,print(type(price)))
+    print(price,type(price))
     # if not price:
     #     bot.send_message(callback.message.chat.id, 'Не удалось определить цену. Повторите выбор тарифа.')
     #     return

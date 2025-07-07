@@ -18,7 +18,8 @@ admin_id = os.getenv('TELEGRAM_ADMIN_ID')
 test_libel = os.getenv('TEST_LIBEL')
 
 bot = telebot.TeleBot(BOT_TOKEN)
-
+# Глобальное хранилище для цен, привязанных к пользователю
+user_prices = {}
 # Проверка типа входного объекта — является ли он callback'ом
 def is_callback(input_data):
     if isinstance(input_data, telebot.types.CallbackQuery):
@@ -133,66 +134,83 @@ def return_user_keys(callback):
 # Обработчик callback'ов для тарифов
 @bot.callback_query_handler(func=lambda callback: callback.data in ['50','123','247','699','1349','2300'])
 def handle_paid_key(callback):
-    handle_paid_key.price = callback.data
-    discount_msg = "" 
-    if handle_paid_key.price == '247':
-        price_discount = top_secret.fortuna_wheel()
-        if type(price_discount) == tuple:
-            handle_paid_key.price = str(price_discount[0])
-            discount = price_discount[1]
-            discount_msg = f"Вам доступна скидка {discount}%!\nСумма к оплате: {handle_paid_key.price} рублей\n"
-        else:
-            handle_paid_key.price = str(price_discount)
-            discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"
+    user_id_str = str(user_id(callback))
+    selected_price = callback.data
+    discount_msg = ""
+
+    # Если пользователь уже выбирал этот тариф — используем сохранённую цену
+    if selected_price == '247' and user_id_str in user_prices:
+        price = user_prices[user_id_str]
+        discount_msg = f"Сумма к оплате: {price} рублей\n"
     else:
-        discount_msg = f"Сумма к оплате: {handle_paid_key.price} рублей\n"
+        if selected_price == '247':
+            # Применяем скидку через fortuna_wheel()
+            price_discount = top_secret.fortuna_wheel()
+            if isinstance(price_discount, tuple):
+                price = str(price_discount[0])
+                discount = price_discount[1]
+                discount_msg = f"Вам доступна скидка {discount}%!\nСумма к оплате: {price} рублей\n"
+            else:
+                price = str(price_discount)
+                discount_msg = f"Сумма к оплате: {price} рублей\n"
+
+            # Сохраняем индивидуальную цену в словарь
+            user_prices[user_id_str] = price
+        else:
+            price = selected_price
+            discount_msg = f"Сумма к оплате: {price} рублей\n"
+            user_prices[user_id_str] = price  # Можно сохранить и другие тарифы при желании
 
     user_key_id = f'{user_id(callback)}'
+    invoice_link = invoice_management.create_invoice(int(price))
 
-    # Создание ссылки на оплату
-    invoice_link = invoice_management.create_invoice(int(handle_paid_key.price))
     if outline.user_key_info(user_key_id):
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton('Оплатить', url=invoice_link[0]))
-        
-        # Кнопка "Проверить оплату"
         markup.add(types.InlineKeyboardButton('Проверить оплату', callback_data=f'check_payment_{invoice_link[1]}'))
-        msg = bot.send_message(callback.message.chat.id, f'{discount_msg}\n1 - Оплатить\n2 - Нажать проверить оплату', reply_markup=markup)
+
+        bot.send_message(callback.message.chat.id, f'{discount_msg}\n1 - Оплатить\n2 - Нажать проверить оплату', reply_markup=markup)
     else:
-        bot.send_message(callback.message.chat.id,f'У вас уже имеется ключ, проверка /mykeys')
-    bot.send_message(admin_id, f'Выбрал тариф {handle_paid_key.price} @{username(callback)}')
+        bot.send_message(callback.message.chat.id, f'У вас уже имеется ключ, проверка /mykeys')
+
+    bot.send_message(admin_id, f'Выбрал тариф {price} @{username(callback)}')
 
 # Обработчик для проверки статуса оплаты
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('check_payment_'))
 def check_payment_status(callback):
     user_key_id = f'{user_id(callback)}'
+    user_id_str = str(user_id(callback))
+    libel = callback.data.split('_')[2]
 
-    libel = callback.data.split('_')[2]  # Извлекаем метку
-    
     if user_key_id == str(admin_id):
         libel = test_libel
-    else:
-        libel = callback.data.split('_')[2]
-
 
     first_name = callback.from_user.first_name
     last_name = callback.from_user.last_name
-    # Переписать этот стыд
-    if handle_paid_key.price in top_secret.p:
+
+    price = user_prices.get(user_id_str)
+
+    if not price:
+        bot.send_message(callback.message.chat.id, 'Не удалось определить цену. Повторите выбор тарифа.')
+        return
+
+    if price in top_secret.p:
         subscription_period = '30'
-    elif handle_paid_key.price == '50':
+    elif price == '50':
         subscription_period = '1'
-    elif handle_paid_key.price == '699':
+    elif price == '699':
         subscription_period = '90'
-    elif handle_paid_key.price == '1349':
+    elif price == '1349':
         subscription_period = '180'
-    elif handle_paid_key.price == '2300':
+    elif price == '2300':
         subscription_period = '365'
+    else:
+        bot.send_message(callback.message.chat.id, 'Неверное значение тарифа.')
+        return
 
-
-    # Проверка статуса оплаты (предполагается, что у вас есть метод для этого)
     payment_status = invoice_management.payment_verification(libel)
     bot.send_message(admin_id, f'Проверил оплату +1 @{username(callback)}')
+
     if payment_status:
         if database.user_exists(user_id(callback)):
             database.update_trial_status(user_id(callback))
@@ -200,23 +218,21 @@ def check_payment_status(callback):
         bot.send_message(admin_id, f'Оплатил +1 @{username(callback)} {user_key_id}')
         
         key = outline.create_new_key(key_id=user_key_id, name=str(user_id(callback)))
+        user_prices.pop(user_id_str, None)
         if database.is_user_in_db(user_id(callback)):
-            database.update_purchased_key(user_id(callback),key.access_url+'#@vpnyt_bot',int(subscription_period))
-            text_message = (f"Оплата подтверждена! Ваш ключ обновлен,вставте его в приложении Outline\n\n'Метка об оплате-{libel}\n\n```{key.access_url+'#@vpnyt_bot'}```")
-            bot.send_message(callback.message.chat.id, text_message,parse_mode='Markdown')
-            start_at_timer.start_timer(user_id(callback),subscription_period)
-        else:    
-            database.add_db(user_id(callback), first_name, last_name, key.access_url+'#@vpnyt_bot',int(subscription_period))
-            start_at_timer.start_timer(user_id(callback),subscription_period)
-            text_message = (f"Оплата подтверждена! Ваш ключ активирован.\n'Метка об оплате-{libel}\n```{key.access_url+'#@vpnyt_bot'}```")
-            bot.send_message(callback.message.chat.id, text_message,parse_mode='Markdown')
-        
-        # Удаление кнопок "Оплатить" и "Проверить оплату"
+            database.update_purchased_key(user_id(callback), key.access_url + '#@vpnyt_bot', int(subscription_period))
+            text_message = (f"Оплата подтверждена! Ваш ключ обновлён.\nМетка об оплате — {libel}\n\n```{key.access_url + '#@vpnyt_bot'}```")
+        else:
+            database.add_db(user_id(callback), first_name, last_name, key.access_url + '#@vpnyt_bot', int(subscription_period))
+            text_message = (f"Оплата подтверждена! Ваш ключ активирован.\nМетка об оплате — {libel}\n\n```{key.access_url + '#@vpnyt_bot'}```")
+
+        bot.send_message(callback.message.chat.id, text_message, parse_mode='Markdown')
+        start_at_timer.start_timer(user_id(callback), subscription_period)
+
         bot.edit_message_reply_markup(callback.message.chat.id, callback.message.message_id, reply_markup=types.InlineKeyboardMarkup())
-
+        user_prices.pop(user_id_str, None)
     else:
-        bot.send_message(callback.message.chat.id, f'Оплата не найдена или не подтверждена. Попробуйте через пару минут.')
-
+        bot.send_message(callback.message.chat.id, 'Оплата не найдена или не подтверждена. Попробуйте позже.')
 
 
 

@@ -220,7 +220,7 @@ def check_payment_status(callback):
         bot.send_message(admin_id, f'Оплатил +1 @{username(callback)} {user_key_id}')
         
         key = outline.create_new_key(key_id=user_key_id, name=str(user_id(callback)))
-        user_prices.pop(user_id_str)
+        
         if database.is_user_in_db(user_id(callback)):
             database.update_purchased_key(user_id(callback), key.access_url + '#@vpnyt_bot', int(subscription_period))
             text_message = (f"Оплата подтверждена! Ваш ключ обновлён.\nМетка об оплате — {libel}\n\n```{key.access_url + '#@vpnyt_bot'}```")

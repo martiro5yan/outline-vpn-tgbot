@@ -190,9 +190,9 @@ def check_payment_status(callback):
 
     price = user_prices.get(user_id_str)
     print(price,type(price))
-    # if not price:
-    #     bot.send_message(callback.message.chat.id, 'Не удалось определить цену. Повторите выбор тарифа.')
-    #     return
+    if not price:
+        bot.send_message(callback.message.chat.id, 'Не удалось определить цену. Повторите выбор тарифа.')
+        return
 
     if price in top_secret.p:
         subscription_period = '30'

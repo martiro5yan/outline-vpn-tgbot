@@ -134,6 +134,7 @@ def return_user_keys(callback):
 # Обработчик callback'ов для тарифов
 @bot.callback_query_handler(func=lambda callback: callback.data in ['50','123','247','699','1349','2300'])
 def handle_paid_key(callback):
+    global user_prices
     user_id_str = str(user_id(callback))
     selected_price = callback.data
     discount_msg = ""
@@ -178,6 +179,7 @@ def handle_paid_key(callback):
 # Обработчик для проверки статуса оплаты
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('check_payment_'))
 def check_payment_status(callback):
+    global user_prices
     user_key_id = f'{user_id(callback)}'
     user_id_str = str(user_id(callback))
     libel = callback.data.split('_')[2]

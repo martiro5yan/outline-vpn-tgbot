@@ -218,19 +218,21 @@ def check_payment_status(callback):
         bot.send_message(admin_id, f'Оплатил +1 @{username(callback)} {user_key_id}')
         
         key = outline.create_new_key(key_id=user_key_id, name=str(user_id(callback)))
-        user_prices.pop(user_id_str, None)
+        user_prices.pop(user_id_str)
         if database.is_user_in_db(user_id(callback)):
             database.update_purchased_key(user_id(callback), key.access_url + '#@vpnyt_bot', int(subscription_period))
             text_message = (f"Оплата подтверждена! Ваш ключ обновлён.\nМетка об оплате — {libel}\n\n```{key.access_url + '#@vpnyt_bot'}```")
+            user_prices.pop(user_id_str)
         else:
             database.add_db(user_id(callback), first_name, last_name, key.access_url + '#@vpnyt_bot', int(subscription_period))
             text_message = (f"Оплата подтверждена! Ваш ключ активирован.\nМетка об оплате — {libel}\n\n```{key.access_url + '#@vpnyt_bot'}```")
+            user_prices.pop(user_id_str)
 
         bot.send_message(callback.message.chat.id, text_message, parse_mode='Markdown')
         start_at_timer.start_timer(user_id(callback), subscription_period)
 
         bot.edit_message_reply_markup(callback.message.chat.id, callback.message.message_id, reply_markup=types.InlineKeyboardMarkup())
-        user_prices.pop(user_id_str, None)
+
     else:
         bot.send_message(callback.message.chat.id, 'Оплата не найдена или не подтверждена. Попробуйте позже.')
 

@@ -62,7 +62,7 @@ def start(message):
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton('Попробовать бесплатно', callback_data='trial'))
         markup.add(types.InlineKeyboardButton('1 день 50 ₽', callback_data='50'))
-        markup.add(types.InlineKeyboardButton(f'1 месяц {price_month} ₽', callback_data=price_month))
+        markup.add(types.InlineKeyboardButton(f'1 месяц 247 ₽', callback_data='247'))
         markup.add(types.InlineKeyboardButton(f'3 месяца 699 ₽', callback_data='699'))
         markup.add(types.InlineKeyboardButton(f'6 месяцев 1349 ₽', callback_data='1349'))
         markup.add(types.InlineKeyboardButton(f'12 месяцев 2300 ₽', callback_data='2300'))

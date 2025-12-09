@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
-import config
+
 import top_secret
 import outline
 import text

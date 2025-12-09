@@ -1,8 +1,10 @@
 *.env
 *.db
+venv
 env/
 __pycache__
 alert.py
 createTocen.py
 top_secret.py
 test.py
+config.py

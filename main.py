@@ -4,6 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+import config
 import top_secret
 import outline
 import text
@@ -55,17 +56,18 @@ def start(message):
     #     price_month = '123'
     #     start_message = text.discount_month
     # else:
-    price_month = '247'
-    start_message =  text.start_message
+    
+    start_message =  text.ny_text
 
     if invoice_management.check_token_validity():
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton('Попробовать бесплатно', callback_data='trial'))
+        markup.add(types.InlineKeyboardButton('Новогодний тариф 3211 ₽', callback_data='3211'))
         markup.add(types.InlineKeyboardButton('1 день 50 ₽', callback_data='50'))
         markup.add(types.InlineKeyboardButton(f'1 месяц 247 ₽', callback_data='247'))
-        markup.add(types.InlineKeyboardButton(f'3 месяца 699 ₽', callback_data='699'))
-        markup.add(types.InlineKeyboardButton(f'6 месяцев 1349 ₽', callback_data='1349'))
-        markup.add(types.InlineKeyboardButton(f'12 месяцев 2300 ₽', callback_data='2300'))
+        markup.add(types.InlineKeyboardButton(f'3 месяца 517 ₽', callback_data='517'))
+        markup.add(types.InlineKeyboardButton(f'6 месяцев 998 ₽', callback_data='998'))
+        markup.add(types.InlineKeyboardButton(f'12 месяцев 1702 ₽', callback_data='1702'))
         markup.add(types.InlineKeyboardButton('Инструкция', callback_data='instruction'))
         markup.add(types.InlineKeyboardButton('Техподдержка', url='https://t.me/vpnytSupport_bot'))
 
@@ -132,7 +134,7 @@ def return_user_keys(callback):
         bot.send_message(callback.chat.id, 'Активных ключей нет!')
 
 # Обработчик callback'ов для тарифов
-@bot.callback_query_handler(func=lambda callback: callback.data in ['50','247','699','1349','2300'])
+@bot.callback_query_handler(func=lambda callback: callback.data in ['50','247','517','699', '998','1349', '1702','2300','3211'])
 def handle_paid_key(callback):
     global user_prices
     user_id_str = str(user_id(callback))
@@ -196,16 +198,18 @@ def check_payment_status(callback):
         bot.send_message(callback.message.chat.id, 'Не удалось определить цену. Повторите выбор тарифа.')
         return
 
-    if price in top_secret.p:
+    if price in top_secret.p or price == '123':
         subscription_period = '30'
     elif price == '50':
         subscription_period = '1'
-    elif price == '699':
+    elif price == '699' or price == '517':
         subscription_period = '90'
-    elif price == '1349':
+    elif price == '1349' or price == '998':
         subscription_period = '180'
-    elif price == '2300':
+    elif price == '2300' or price == '1702':
         subscription_period = '365'
+    elif price == '3211':
+        subscription_period = '785'
     else:
         bot.send_message(callback.message.chat.id, 'Неверное значение тарифа.')
         return

@@ -57,17 +57,17 @@ def start(message):
     #     start_message = text.discount_month
     # else:
     
-    start_message =  text.ny_text
+    start_message =  text.start_message
 
     if invoice_management.check_token_validity():
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton('Попробовать бесплатно', callback_data='trial'))
-        markup.add(types.InlineKeyboardButton('Новогодний тариф 3211 ₽', callback_data='3211'))
+        #markup.add(types.InlineKeyboardButton('Новогодний тариф 3211 ₽', callback_data='3211'))
         markup.add(types.InlineKeyboardButton('1 день 50 ₽', callback_data='50'))
         markup.add(types.InlineKeyboardButton(f'1 месяц 247 ₽', callback_data='247'))
-        markup.add(types.InlineKeyboardButton(f'3 месяца 517 ₽', callback_data='517'))
-        markup.add(types.InlineKeyboardButton(f'6 месяцев 998 ₽', callback_data='998'))
-        markup.add(types.InlineKeyboardButton(f'12 месяцев 1702 ₽', callback_data='1702'))
+        markup.add(types.InlineKeyboardButton(f'3 месяца 699 ₽', callback_data='699'))
+        markup.add(types.InlineKeyboardButton(f'6 месяцев 1349 ₽', callback_data='1349'))
+        markup.add(types.InlineKeyboardButton(f'12 месяцев 2300 ₽', callback_data='2300'))
         markup.add(types.InlineKeyboardButton('Инструкция', callback_data='instruction'))
         markup.add(types.InlineKeyboardButton('Техподдержка', url='https://t.me/vpnytSupport_bot'))
 
